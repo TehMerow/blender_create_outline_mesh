@@ -199,6 +199,7 @@ def _outline_obj(self, context):
     # Parents the outline object to the original active object
     if self.parent_to_original:
         context.active_object.parent = bpy.data.objects[object_name]
+        bpy.ops.object.location_clear(clear_delta=False)
 
 
 
