@@ -200,6 +200,27 @@ def _outline_obj(self, context):
     if self.parent_to_original:
         context.active_object.parent = bpy.data.objects[object_name]
 
+    if self.move_to_collection:
+        _move_to_collection(self, context)
+
+
+def _move_to_collection(self, context):
+    collections = bpy.data.collections
+    collection_name = "object_outlines"
+    outline_collection = None
+
+    active_obj = context.active_object
+
+    if collections.find(collection_name) == -1:
+        outline_collection = bpy.data.collections.new(collection_name)
+    else:
+        outline_collection = bpy.data.collections[collection_name]
+
+
+    context.scene.collection.children.link(outline_collection)
+
+    outline_collection.objects.link(active_obj)
+
 
 
 class CreateOutLine(Operator):
@@ -239,6 +260,11 @@ class CreateOutLine(Operator):
         description = "Parents the outline object to the original object"
     )
 
+    move_to_collection: bpy.props.BoolProperty(
+        name = "Move to outline Collection",
+        default = False,
+        description = "Moves the outline object to an outline collection"
+    )
 
 
     def execute(self, context):
