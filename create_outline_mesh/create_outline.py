@@ -8,7 +8,7 @@ bl_info = {
     "version" : (1,0),
     "category": "Object",
     "author" : "Merow",
-    # "doc_url" : "https://github.com/TehMerow/PBR_Bake_Tools/wiki/Tutorial",
+    "doc_url" : "https://github.com/TehMerow/blender_create_outline_mesh/wiki/Tutorial",
     "location" : "Operator Search Menu (f3) 'Create Outline Mesh'",
     "description" : "Creates a mesh outline around your object"
 }
