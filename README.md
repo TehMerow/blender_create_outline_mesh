@@ -5,7 +5,10 @@ This blender addon creates an outline mesh for your objects with materials
 
 # What it do?
 
+
 What this does is creates an outline mesh for your objects in blender. The process of doing this manually can be rather tedious so this addon speeds that up
+
+![](images/create_outlines_demo.webp)
 
 This includes:
 
