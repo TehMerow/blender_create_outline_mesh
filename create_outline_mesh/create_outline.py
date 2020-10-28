@@ -209,9 +209,12 @@ class CreateOutLine(Operator):
     bl_options = {'REGISTER', 'UNDO'}
 
     size: bpy.props.FloatProperty(
-        name="Scale",
+        name="Size",
         default=0.05,
-        description="scaling"
+        description="scaling",
+        min = 0.001,
+        max = 0.2,
+        precision = 3
     )
 
     outline_color: bpy.props.FloatVectorProperty(
