@@ -90,9 +90,9 @@ def _create_outline_material():
     mat.node_tree.links.new(rgb_node.outputs[0], principled_node.inputs[0])
     mat.node_tree.links.new(rgb_node.outputs[0], outline_shader.inputs[0])
 
-def _create_outline_material_group():
+def _create_outline_material_group(self, context):
     outline_name = "outline_material_shader_group"
-
+    outline_color = self.outline_color
     
     # Create the group
     cycles_outline_material_group = bpy.data.node_groups.new(name=outline_name, type="ShaderNodeTree")
@@ -208,7 +208,14 @@ class CreateOutLine(Operator):
     size: bpy.props.FloatProperty(
         name="Scale",
         default=0.05,
-        description="scaling",
+        description="scaling"
+    )
+
+    outline_color: bpy.props.FloatVectorProperty(
+        name = "Outline Color",
+        subtype = 'COLOR',
+        size = 4,
+        default = (0.01, 0.01, 0.01, 1.0)
     )
 
     apply_displacement: bpy.props.BoolProperty(
@@ -222,6 +229,7 @@ class CreateOutLine(Operator):
         default = True,
         description = "Parents the outline object to the original object"
     )
+
 
     def execute(self, context):
         _create_outline_material()
