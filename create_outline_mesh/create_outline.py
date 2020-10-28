@@ -40,8 +40,9 @@ bl_info = {
 }
 
 
-def _create_outline_material():
+def _create_outline_material(self, context):
     mat_name = "outline_material"
+    outline_color = self.outline_color
 
     if bpy.data.materials.find(mat_name) != -1:
         return
@@ -52,7 +53,7 @@ def _create_outline_material():
     mat = bpy.data.materials[mat_name]
     
     # sets the eevee values 
-    mat.diffuse_color = (0.0,0.0,0.0,1.0)
+    mat.diffuse_color = outline_color
     mat.use_backface_culling = True
     mat.shadow_method = "NONE"
     mat.use_nodes = True
@@ -62,7 +63,7 @@ def _create_outline_material():
     if bpy.data.node_groups.find("outline_material_shader_group") != -1:
         return
     
-    _create_outline_material_group()
+    _create_outline_material_group(self, context)
     # Creates the outline shader group in the material and links it all up
     outline_shader = mat.node_tree.nodes.new(type="ShaderNodeGroup")
     outline_shader.node_tree = bpy.data.node_groups['outline_material_shader_group']
@@ -77,14 +78,14 @@ def _create_outline_material():
 
     # Sets the Pricipled nodes default values for outline shader for eevee
     principled_node = mat.node_tree.nodes["Principled BSDF"] 
-    principled_node.inputs[0].default_value = (0.01, 0.01, 0.01, 1.0)
+    principled_node.inputs[0].default_value = outline_color
     principled_node.inputs[4].default_value = 1.0
     principled_node.inputs[5].default_value = 0.0
     principled_node.inputs[7].default_value = 1.0
 
     # Create RGB mode for both eevee and cycles outline shaders
     rgb_node = mat.node_tree.nodes.new(type="ShaderNodeRGB")
-    rgb_node.outputs[0].default_value = (0.01, 0.01, 0.01, 1.0)
+    rgb_node.outputs[0].default_value = outline_color
     rgb_node.location = (-400, 0)
 
     mat.node_tree.links.new(rgb_node.outputs[0], principled_node.inputs[0])
@@ -103,7 +104,7 @@ def _create_outline_material_group(self, context):
     
     # populate input with props
     # populate output with props
-    cycles_outline_material_group.inputs.new(type="NodeSocketColor", name="BaseColor").default_value = (0.01,0.01,0.01,1.0)
+    cycles_outline_material_group.inputs.new(type="NodeSocketColor", name="BaseColor").default_value = outline_color
     cycles_outline_material_group.outputs.new(type="NodeSocketShader", name="Shader")
     
     # Create group output node
@@ -199,6 +200,8 @@ def _outline_obj(self, context):
     if self.parent_to_original:
         context.active_object.parent = bpy.data.objects[object_name]
 
+
+
 class CreateOutLine(Operator):
     """Create a new Mesh Object"""
     bl_idname = "mesh.create_outline_mesh"
@@ -212,10 +215,13 @@ class CreateOutLine(Operator):
     )
 
     outline_color: bpy.props.FloatVectorProperty(
-        name = "Outline Color",
+        name = "Outline Color (Global)",
         subtype = 'COLOR',
         size = 4,
-        default = (0.01, 0.01, 0.01, 1.0)
+        default = (0.01, 0.01, 0.01, 1.0),
+        step = 100,
+        min = 0.0,
+        max = 1.0
     )
 
     apply_displacement: bpy.props.BoolProperty(
@@ -231,13 +237,13 @@ class CreateOutLine(Operator):
     )
 
 
+
     def execute(self, context):
-        _create_outline_material()
+        _create_outline_material(self, context)
 
         _outline_obj(self, context)
 
         return {'FINISHED'}
-
 
 
 classes = (
@@ -250,12 +256,9 @@ def register():
         bpy.utils.register_class(item)
 
 
-
 def unregister():
     for item in classes:
         bpy.utils.unregister_class(item)
-
-
 
 
 if __name__ == "__main__":
