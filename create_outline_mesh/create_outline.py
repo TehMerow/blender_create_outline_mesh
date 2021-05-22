@@ -24,8 +24,8 @@ SOFTWARE.
 
 """
 
-import bpy
-from bpy.types import Operator
+import bpy #type: ignore
+from bpy.types import Operator #type: ignore
 
 
 bl_info = {
