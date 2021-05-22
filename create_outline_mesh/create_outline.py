@@ -142,20 +142,32 @@ def _create_outline_material_group(self, context):
     cycles_outline_material_group.links.new(mix_node_backface.outputs[0], outputs.inputs[0])
     
 
-def _outline_obj(self, context):
+def _update_cycles_settings(self, context):
+    # Sets this object properties so the object doesn't
+    # affect shading in cycles, not neccecary in Eevee but
+    # nice to have
+    context.active_object.cycles_visibility.diffuse = False
+    context.active_object.cycles_visibility.glossy = False
+    context.active_object.cycles_visibility.transmission = False
+    context.active_object.cycles_visibility.scatter = False
+    context.active_object.cycles_visibility.shadow = False
 
-    scale = -self.size
-    object_name = context.active_object.name
-
+def _duplicate_selected(self, context):
     # Duplicate selected object
     bpy.ops.object.duplicate_move()
     bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
-    
+    bpy.ops.object.location_clear(clear_delta=False)
+    pass
+
+
+def _clear_material_slots(self, context):
     # Clear all material slots
     material_slots_length = len(bpy.context.active_object.material_slots.items())
     for i in range(0, material_slots_length-1):
         bpy.ops.object.material_slot_remove()
-    
+
+
+def _flip_normals(self, context):
     # Jump into edit mode, select all, 
     # flip normals, deselect, exit edit mode
     bpy.ops.object.mode_set(mode='EDIT')
@@ -164,6 +176,8 @@ def _outline_obj(self, context):
     bpy.ops.mesh.select_all(action='DESELECT')
     bpy.ops.object.mode_set(mode='OBJECT')
     
+def _create_and_apply_displacement(self, context):
+    scale = -self.size
     # Create displacement modifier and name it
     # Displacement modifier used to evenley expand
     # the mesh from normals instead of origin
@@ -179,47 +193,76 @@ def _outline_obj(self, context):
     # Apply the displacement modifier
     if self.apply_displacement:
         bpy.ops.object.modifier_apply(modifier="outline_displacement")
-    
-    # Sets this object properties so the object doesn't
-    # affect shading in cycles, not neccecary in Eevee but
-    # nice to have
-    context.active_object.cycles_visibility.diffuse = False
-    context.active_object.cycles_visibility.glossy = False
-    context.active_object.cycles_visibility.transmission = False
-    context.active_object.cycles_visibility.scatter = False
-    context.active_object.cycles_visibility.shadow = False
 
-    # Add the outline material to the object in the first slot
-    context.active_object.material_slots[0].material = bpy.data.materials['outline_material']
+
+def _add_outline_mat(self, context):
+    mat_slots = context.active_object.material_slots
     
+    if len(mat_slots) > 0:
+        for mat in range(0, len(mat_slots)-1):
+            bpy.context.active_object.active_material_index = 0
+            bpy.ops.object.material_slot_remove()
+
+        # Add the outline material to the object in the first slot
+        context.active_object.material_slots[0].material = bpy.data.materials['outline_material']
+
+    else:
+        bpy.ops.object.material_slot_add()
+        context.active_object.material_slots[0].material = bpy.data.materials['outline_material']
+
+
+def _change_obj_name(self, context, object_name):
     # Change the name of the outline object to 
     # Active object name + .outline
     context.active_object.name = object_name + ".outline"    
-    
-    # Parents the outline object to the original active object
-    if self.parent_to_original:
-        context.active_object.parent = bpy.data.objects[object_name]
 
-    if self.move_to_collection:
-        _move_to_collection(self, context)
+
+def _parent_outline_to_original_mesh(self, context, object_name):
+
+    # Parents the outline object to the original active object
+    if not self.parent_to_original:
+        return
+    context.active_object.parent = bpy.data.objects[object_name]
+
+
+
+
+def _outline_obj(self, context):
+    object_name = context.active_object.name
+    
+
+    _duplicate_selected(self, context)
+    _clear_material_slots(self, context)
+    _flip_normals(self, context)
+    _create_and_apply_displacement(self, context)
+    _update_cycles_settings(self, context)
+    _add_outline_mat(self, context)
+    _change_obj_name(self, context, object_name)
+    _parent_outline_to_original_mesh(self, context, object_name)
+    _move_to_collection(self, context)
+    
+
 
 
 def _move_to_collection(self, context):
+    if not self.move_to_collection:
+        return
     collections = bpy.data.collections
-    collection_name = "object_outlines"
+    collection_name = self.collection_name
     outline_collection = None
 
     active_obj = context.active_object
 
     if collections.find(collection_name) == -1:
         outline_collection = bpy.data.collections.new(collection_name)
+        context.scene.collection.children.link(outline_collection)
     else:
         outline_collection = bpy.data.collections[collection_name]
 
 
-    context.scene.collection.children.link(outline_collection)
 
     outline_collection.objects.link(active_obj)
+
 
 
 
@@ -234,7 +277,7 @@ class CreateOutLine(Operator):
         default=0.05,
         description="scaling",
         min = 0.001,
-        max = 0.2,
+        max = 1.0,
         precision = 3
     )
 
@@ -265,6 +308,13 @@ class CreateOutLine(Operator):
         default = False,
         description = "Moves the outline object to an outline collection"
     )
+    
+    collection_name: bpy.props.StringProperty(
+        name = "Collection Name",
+        default = "outline_collection",
+        description = "Which Collection to put the outline mesh"
+    )
+
 
 
     def execute(self, context):
