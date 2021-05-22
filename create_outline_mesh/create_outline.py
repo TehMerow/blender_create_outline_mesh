@@ -1,7 +1,7 @@
 """
 MIT License
 
-Copyright (c) [2020] [TehMerow]
+Copyright (c) 2020 TehMerow
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -31,11 +31,11 @@ from bpy.types import Operator
 bl_info = {
     "name"    : "Create Outline Mesh",
     "blender" : (2,90,1),
-    "version" : (1,0),
+    "version" : (1,1),
     "category": "Object",
-    "author" : "Merow",
+    "author" : "Tehmerow",
     "doc_url" : "https://github.com/TehMerow/blender_create_outline_mesh/wiki/Tutorial",
-    "location" : "Operator Search Menu (f3) 'Create Outline Mesh'",
+    "location" : "Object Add Menu > Create Outline Mesh",
     "description" : "Creates a Outline Mesh around your object"
 }
 
@@ -220,7 +220,6 @@ def _change_obj_name(self, context, object_name):
 def _parent_outline_to_original_mesh(self, context, object_name):
 
     # Parents the outline object to the original active object
-<<<<<<< HEAD
     if not self.parent_to_original:
         return
     context.active_object.parent = bpy.data.objects[object_name]
@@ -264,11 +263,6 @@ def _move_to_collection(self, context):
 
     outline_collection.objects.link(active_obj)
 
-=======
-    if self.parent_to_original:
-        context.active_object.parent = bpy.data.objects[object_name]
-        bpy.ops.object.location_clear(clear_delta=False)
->>>>>>> main
 
 
 
@@ -331,17 +325,26 @@ class CreateOutLine(Operator):
         return {'FINISHED'}
 
 
+# UI 
+
+
+
+def outline_menu(self, context):
+    self.layout.operator("mesh.create_outline_mesh")
+
 classes = (
     CreateOutLine,
 )
 
 
 def register():
+    bpy.types.VIEW3D_MT_add.append(outline_menu)
     for item in classes:
         bpy.utils.register_class(item)
 
 
 def unregister():
+    bpy.types.VIEW3D_MT_add.remove(outline_menu)
     for item in classes:
         bpy.utils.unregister_class(item)
 
