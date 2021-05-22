@@ -1,7 +1,7 @@
 """
 MIT License
 
-Copyright (c) [year] [fullname]
+Copyright (c) [2020] [TehMerow]
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -220,6 +220,7 @@ def _change_obj_name(self, context, object_name):
 def _parent_outline_to_original_mesh(self, context, object_name):
 
     # Parents the outline object to the original active object
+<<<<<<< HEAD
     if not self.parent_to_original:
         return
     context.active_object.parent = bpy.data.objects[object_name]
@@ -263,6 +264,11 @@ def _move_to_collection(self, context):
 
     outline_collection.objects.link(active_obj)
 
+=======
+    if self.parent_to_original:
+        context.active_object.parent = bpy.data.objects[object_name]
+        bpy.ops.object.location_clear(clear_delta=False)
+>>>>>>> main
 
 
 
