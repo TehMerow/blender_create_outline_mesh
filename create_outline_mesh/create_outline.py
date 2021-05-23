@@ -40,12 +40,9 @@ bl_info = {
 }
 
 
-def _create_outline_material(self, context):
-    mat_name = "outline_material"
+def _create_material(self, context):
     outline_color = self.outline_color
-
-    if bpy.data.materials.find(mat_name) != -1:
-        return
+    mat_name = "outline_material"
     # Create Material
     bpy.data.materials.new(name=mat_name)
 
@@ -58,12 +55,26 @@ def _create_outline_material(self, context):
     mat.shadow_method = "NONE"
     mat.use_nodes = True
     
+    return mat
+
+
+def _create_outline_material(self, context):
+    # Creates the outline material 
+    mat_name = "outline_material"
+    outline_color = self.outline_color
+
+    if bpy.data.materials.find(mat_name) != -1:
+        return
+    
+    mat = _create_material(self, context)
+  
     # Creates the outline material group
 
     if bpy.data.node_groups.find("outline_material_shader_group") != -1:
         return
     
     _create_outline_material_group(self, context)
+
     # Creates the outline shader group in the material and links it all up
     outline_shader = mat.node_tree.nodes.new(type="ShaderNodeGroup")
     outline_shader.node_tree = bpy.data.node_groups['outline_material_shader_group']
@@ -83,15 +94,16 @@ def _create_outline_material(self, context):
     principled_node.inputs[5].default_value = 0.0
     principled_node.inputs[7].default_value = 1.0
 
-    # Create RGB mode for both eevee and cycles outline shaders
-    rgb_node = mat.node_tree.nodes.new(type="ShaderNodeRGB")
-    rgb_node.outputs[0].default_value = outline_color
-    rgb_node.location = (-400, 0)
+    # # Create RGB mode for both eevee and cycles outline shaders
+    # rgb_node = mat.node_tree.nodes.new(type="ShaderNodeRGB")
+    # rgb_node.outputs[0].default_value = outline_color
+    # rgb_node.location = (-400, 0)
 
-    mat.node_tree.links.new(rgb_node.outputs[0], principled_node.inputs[0])
-    mat.node_tree.links.new(rgb_node.outputs[0], outline_shader.inputs[0])
+    # mat.node_tree.links.new(rgb_node.outputs[0], principled_node.inputs[0])
+    # mat.node_tree.links.new(rgb_node.outputs[0], outline_shader.inputs[0])
 
 def _create_outline_material_group(self, context):
+    # Outline material group for eevee
     outline_name = "outline_material_shader_group"
     outline_color = self.outline_color
     
@@ -281,8 +293,15 @@ class CreateOutLine(Operator):
         precision = 3
     )
 
+
+    # new_material: bpy.props.BoolProperty(
+    #     name = "Seperate Material",
+    #     description = "Creates a seperate outline material"
+    # )
+
+
     outline_color: bpy.props.FloatVectorProperty(
-        name = "Outline Color (Global)",
+        name = "Outline Color (Global) \n Note: this only adjusts the color each new material",
         subtype = 'COLOR',
         size = 4,
         default = (0.01, 0.01, 0.01, 1.0),
