@@ -277,6 +277,13 @@ def _move_to_collection(self, context):
 
 
 
+def set_backface_culling_in_viewports(self, context):
+    area = next(area for area in bpy.context.screen.areas if area.type == "VIEW_3D")
+    space = next(space for space in area.spaces if space.type == "VIEW_3D")
+    space.shading.show_backface_culling = True
+
+    if self.view_in_mat_preview:
+        space.shading.type = "MATERIAL"
 
 class CreateOutLine(Operator):
     """Create a new Mesh Object"""
@@ -293,13 +300,6 @@ class CreateOutLine(Operator):
         precision = 3
     )
 
-
-    # new_material: bpy.props.BoolProperty(
-    #     name = "Seperate Material",
-    #     description = "Creates a seperate outline material"
-    # )
-
-
     outline_color: bpy.props.FloatVectorProperty(
         name = "Outline Color (Global) \n Note: this only adjusts the color each new material",
         subtype = 'COLOR',
@@ -309,7 +309,11 @@ class CreateOutLine(Operator):
         min = 0.0,
         max = 1.0
     )
-
+    view_in_mat_preview: bpy.props.BoolProperty(
+        name = "Jump to Material Preview",
+        default = False,
+        description = "Turn on Material Preview"
+    )
     apply_displacement: bpy.props.BoolProperty(
         name = "Apply Displacement Modifier",
         default = True,
@@ -340,7 +344,7 @@ class CreateOutLine(Operator):
         _create_outline_material(self, context)
 
         _outline_obj(self, context)
-
+        set_backface_culling_in_viewports(self,context)
         return {'FINISHED'}
 
 
