@@ -158,11 +158,11 @@ def _update_cycles_settings(self, context):
     # Sets this object properties so the object doesn't
     # affect shading in cycles, not neccecary in Eevee but
     # nice to have
-    context.active_object.cycles_visibility.diffuse = False
-    context.active_object.cycles_visibility.glossy = False
-    context.active_object.cycles_visibility.transmission = False
-    context.active_object.cycles_visibility.scatter = False
-    context.active_object.cycles_visibility.shadow = False
+    context.active_object.visible_diffuse = False
+    context.active_object.visible_glossy = False
+    context.active_object.visible_transmission = False
+    context.active_object.visible_volume_scatter = False
+    context.active_object.visible_shadow = False
 
 def _duplicate_selected(self, context):
     # Duplicate selected object
