@@ -1,3 +1,7 @@
+This addon can just be done with geometry nodes now
+
+goodbye
+
 # Create Outline Objects In Blender With Ease
 
  **This blender addon creates an outline object for your objects with materials**
